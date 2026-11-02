@@ -1,74 +1,36 @@
 # ApexDesk — IT Helpdesk & Ticket Management System
 
-A modern, production-ready IT Helpdesk and Ticket Management platform built for organisations that require clear visibility, SLA discipline, and role-based access control.
+Modern IT Helpdesk with Supabase (Auth + Postgres + RLS), SLA engine, and clean operational UI.
 
-## Features
-
-- **Dashboard** with real-time operational metrics (open tickets, SLA compliance, critical volume)
-- **Ticket lifecycle management** — Open → In Progress → Pending → Resolved → Closed
-- **Priority & category** classification with visual indicators
-- **Role-based access** — Admin, Agent, Requester
-- **Knowledge Base** for self-service resolution
-- **Reports & Analytics** — SLA compliance, response times, volume by category
-- **User management** view
-- **Responsive, dark professional UI** optimised for operations teams
-
-## Tech Stack
-
-- **Next.js 15** (App Router)
-- **TypeScript**
-- **Tailwind CSS**
-- **Lucide React** icons
-- Ready for Supabase / Postgres / any backend
-
-## Getting Started
+## Quick Start (Mock Mode)
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+No database required — runs on rich mock data.
 
-## Project Structure
+## Supabase Setup
 
-```
-src/
-├── app/
-│   ├── (auth)/login
-│   ├── (dashboard)/
-│   │   ├── dashboard
-│   │   ├── tickets
-│   │   ├── knowledge
-│   │   ├── reports
-│   │   ├── users
-│   │   └── settings
-│   └── page.tsx
-├── components/
-│   ├── layout/
-│   ├── ui/
-│   └── ...
-├── lib/
-│   ├── mock-data.ts
-│   └── utils.ts
-└── types/
-```
+1. Create a project at supabase.com
+2. Run `supabase/schema.sql` in the SQL Editor
+3. Copy `.env.example` → `.env.local` and add your keys
+4. Restart the app
 
-## Roadmap (Production Hardening)
+## SLA Policies
 
-- [ ] Supabase Auth + Row Level Security
-- [ ] Real-time ticket updates
-- [ ] Email-to-ticket ingestion
-- [ ] SLA policy engine with escalation
-- [ ] Full audit trail
-- [ ] Customer / requester portal
-- [ ] Advanced reporting & exports
-- [ ] Mobile PWA enhancements
+| Priority  | Response | Resolution |
+|-----------|----------|------------|
+| Critical  | 1h       | 4h         |
+| High      | 2h       | 8h         |
+| Medium    | 4h       | 24h        |
+| Low       | 8h       | 48h        |
 
-## Author
+Breach detection: `GET /api/cron/sla`
 
-Built for Brightwell Dlamini / organisational use.
+## Live Demo
 
----
+https://it-helpdesk-ticket-system-ten.vercel.app
 
 **ApexDesk** — Clear tickets. Controlled outcomes.
