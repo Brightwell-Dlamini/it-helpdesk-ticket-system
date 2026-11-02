@@ -11,12 +11,30 @@ export type ActionResult = {
   data?: unknown;
 };
 
+function isSupabaseConfigured(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+}
+
 export async function createTicket(formData: {
   title: string;
   description: string;
   category: TicketCategory;
   priority: TicketPriority;
 }): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) {
+    return {
+      success: true,
+      data: {
+        id: "mock-" + Date.now(),
+        number: "HD-" + Math.floor(1000 + Math.random() * 9000),
+        ...formData,
+      },
+    };
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
@@ -48,6 +66,10 @@ export async function updateTicketStatus(
   ticketId: string,
   status: TicketStatus
 ): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) {
+    return { success: true, data: { id: ticketId, status } };
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
@@ -86,18 +108,28 @@ export async function assignTicket(
   ticketId: string,
   assigneeId: string | null
 ): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) {
+    return { success: true, data: { id: ticketId, assigneeId } };
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
-  const { error } = await supabase
-    .from("tickets")
-    .update({
-      assignee_id: assigneeId,
-      ...(assigneeId ? { status: "in_progress" } : {}),
-    })
-    .eq("id", ticketId);
+  const updates: Record<string, unknown> = { assignee_id: assigneeId };
+  if (assigneeId) {
+    updates.status = "in_progress";
+    const { data: ticket } = await supabase
+      .from("tickets")
+      .select("first_response_at")
+      .eq("id", ticketId)
+      .single();
+    if (ticket && !ticket.first_response_at) {
+      updates.first_response_at = new Date().toISOString();
+    }
+  }
 
+  const { error } = await supabase.from("tickets").update(updates).eq("id", ticketId);
   if (error) return { success: false, error: error.message };
 
   revalidatePath(`/tickets/${ticketId}`);
@@ -107,6 +139,9 @@ export async function assignTicket(
 }
 
 export async function assignToMe(ticketId: string): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) {
+    return { success: true, data: { id: ticketId, assignedTo: "current-user" } };
+  }
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
@@ -118,6 +153,13 @@ export async function addComment(formData: {
   content: string;
   isInternal?: boolean;
 }): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) {
+    return {
+      success: true,
+      data: { id: "mock-comment-" + Date.now(), ...formData },
+    };
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
@@ -128,19 +170,39 @@ export async function addComment(formData: {
     content: formData.content,
     is_internal: formData.isInternal ?? false,
   });
-
   if (error) return { success: false, error: error.message };
 
-  await supabase
-    .from("tickets")
-    .update({ updated_at: new Date().toISOString() })
-    .eq("id", formData.ticketId);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
 
+  const ticketUpdates: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (profile && (profile.role === "agent" || profile.role === "admin")) {
+    const { data: ticket } = await supabase
+      .from("tickets")
+      .select("first_response_at")
+      .eq("id", formData.ticketId)
+      .single();
+    if (ticket && !ticket.first_response_at) {
+      ticketUpdates.first_response_at = new Date().toISOString();
+    }
+  }
+
+  await supabase.from("tickets").update(ticketUpdates).eq("id", formData.ticketId);
   revalidatePath(`/tickets/${formData.ticketId}`);
   return { success: true };
 }
 
 export async function runSlaBreachDetection(): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) {
+    return { success: true, data: { breachedCount: 0 } };
+  }
+
   const supabase = await createClient();
   const { data: openTickets, error } = await supabase
     .from("tickets")
