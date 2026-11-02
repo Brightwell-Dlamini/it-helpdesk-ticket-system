@@ -1,7 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { tickets, comments, users } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   getPriorityColor,
   getStatusColor,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { TicketActions, CommentForm } from "@/components/tickets/ticket-actions";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -37,10 +37,7 @@ export default async function TicketDetailPage({ params }: PageProps) {
 
   return (
     <div>
-      <Header
-        title={ticket.number}
-        description={ticket.title}
-      />
+      <Header title={ticket.number} description={ticket.title} />
 
       <div className="p-6">
         <div className="mb-6">
@@ -146,20 +143,7 @@ export default async function TicketDetailPage({ params }: PageProps) {
                 )}
               </div>
 
-              <div className="border-t border-slate-800 p-5">
-                <textarea
-                  placeholder="Add a reply or internal note..."
-                  rows={3}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm placeholder:text-slate-500 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 resize-none"
-                />
-                <div className="mt-3 flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-xs text-slate-400">
-                    <input type="checkbox" className="rounded" />
-                    Internal note (not visible to requester)
-                  </label>
-                  <Button size="sm">Post Reply</Button>
-                </div>
-              </div>
+              <CommentForm ticketId={ticket.id} />
             </div>
           </div>
 
@@ -168,7 +152,6 @@ export default async function TicketDetailPage({ params }: PageProps) {
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
                 Details
               </h3>
-
               <dl className="space-y-4 text-sm">
                 <div>
                   <dt className="text-slate-500 mb-1 flex items-center gap-1.5">
@@ -177,7 +160,6 @@ export default async function TicketDetailPage({ params }: PageProps) {
                   </dt>
                   <dd className="font-medium">{ticket.requesterName}</dd>
                 </div>
-
                 <div>
                   <dt className="text-slate-500 mb-1 flex items-center gap-1.5">
                     <User className="h-3.5 w-3.5" />
@@ -191,7 +173,6 @@ export default async function TicketDetailPage({ params }: PageProps) {
                     )}
                   </dd>
                 </div>
-
                 <div>
                   <dt className="text-slate-500 mb-1 flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5" />
@@ -199,7 +180,6 @@ export default async function TicketDetailPage({ params }: PageProps) {
                   </dt>
                   <dd className="font-medium">{formatDate(ticket.createdAt)}</dd>
                 </div>
-
                 <div>
                   <dt className="text-slate-500 mb-1 flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5" />
@@ -207,7 +187,6 @@ export default async function TicketDetailPage({ params }: PageProps) {
                   </dt>
                   <dd className="font-medium">{formatDate(ticket.updatedAt)}</dd>
                 </div>
-
                 {ticket.dueAt && (
                   <div>
                     <dt className="text-slate-500 mb-1 flex items-center gap-1.5">
@@ -217,7 +196,6 @@ export default async function TicketDetailPage({ params }: PageProps) {
                     <dd className="font-medium">{formatDate(ticket.dueAt)}</dd>
                   </div>
                 )}
-
                 {ticket.resolvedAt && (
                   <div>
                     <dt className="text-slate-500 mb-1">Resolved</dt>
@@ -229,25 +207,11 @@ export default async function TicketDetailPage({ params }: PageProps) {
               </dl>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5 space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Actions
-              </h3>
-              <Button className="w-full" size="sm" variant="secondary">
-                Assign to me
-              </Button>
-              <Button className="w-full" size="sm" variant="secondary">
-                Change Status
-              </Button>
-              <Button className="w-full" size="sm" variant="secondary">
-                Escalate
-              </Button>
-              {ticket.status !== "resolved" && ticket.status !== "closed" && (
-                <Button className="w-full" size="sm">
-                  Mark Resolved
-                </Button>
-              )}
-            </div>
+            <TicketActions
+              ticketId={ticket.id}
+              currentStatus={ticket.status}
+              isAssigned={Boolean(ticket.assigneeId)}
+            />
           </div>
         </div>
       </div>
