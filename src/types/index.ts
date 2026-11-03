@@ -44,6 +44,7 @@ export interface Ticket {
   updatedAt: string;
   resolvedAt?: string;
   dueAt?: string;
+  firstResponseAt?: string;
   slaBreached?: boolean;
   tags?: string[];
   commentsCount?: number;
