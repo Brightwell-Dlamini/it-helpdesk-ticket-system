@@ -7,7 +7,7 @@ import {
   dashboardStats as mockStats,
   currentUser as mockCurrentUser,
 } from "@/lib/mock-data";
-import type { Ticket, Comment, User, KnowledgeArticle, DashboardStats } from "@/types";
+import type { Ticket, Comment, User, KnowledgeArticle, DashboardStats, Attachment } from "@/types";
 import { isSlaBreached } from "@/lib/sla";
 
 function isSupabaseConfigured(): boolean {
@@ -131,16 +131,28 @@ export async function getComments(ticketId: string): Promise<Comment[]> {
 
     if (error || !data) return [];
 
-    return data.map((c) => ({
-      id: c.id,
-      ticketId: c.ticket_id,
-      authorId: c.author_id,
-      authorName: (c.profiles as { full_name: string })?.full_name ?? "Unknown",
-      authorRole: (c.profiles as { role: string })?.role as Comment["authorRole"],
-      content: c.content,
-      isInternal: c.is_internal,
-      createdAt: c.created_at,
-    }));
+    return data.map((c) => {
+      const authorName =
+        (c.profiles as { full_name: string })?.full_name ?? "Unknown";
+      const content = c.content as string;
+      const isSystem =
+        authorName === "System" ||
+        content.startsWith("Status changed") ||
+        content.startsWith("Ticket created") ||
+        content.startsWith("Assigned to") ||
+        content.startsWith("SLA ");
+      return {
+        id: c.id,
+        ticketId: c.ticket_id,
+        authorId: c.author_id,
+        authorName: isSystem ? "System" : authorName,
+        authorRole: (c.profiles as { role: string })?.role as Comment["authorRole"],
+        content,
+        isInternal: c.is_internal,
+        isSystem,
+        createdAt: c.created_at,
+      };
+    });
   } catch {
     return mockComments.filter((c) => c.ticketId === ticketId);
   }
@@ -247,4 +259,33 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
 export async function getKnowledgeArticles(): Promise<KnowledgeArticle[]> {
   return mockArticles;
+}
+
+export async function getAttachments(ticketId: string): Promise<Attachment[]> {
+  if (!isSupabaseConfigured()) return [];
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("attachments")
+      .select("*, profiles:uploaded_by(full_name)")
+      .eq("ticket_id", ticketId)
+      .order("created_at", { ascending: false });
+
+    if (error || !data) return [];
+
+    return data.map((row) => ({
+      id: row.id,
+      ticketId: row.ticket_id,
+      uploadedBy: row.uploaded_by,
+      uploaderName: (row.profiles as { full_name: string } | null)?.full_name,
+      fileName: row.file_name,
+      fileSize: row.file_size,
+      mimeType: row.mime_type,
+      storagePath: row.storage_path,
+      createdAt: row.created_at,
+    }));
+  } catch {
+    return [];
+  }
 }
