@@ -14,20 +14,51 @@ import {
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { currentUser } from "@/lib/mock-data";
+import type { User, UserRole } from "@/types";
 
-const navItems = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  roles?: UserRole[];
+};
+
+const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/tickets", label: "Tickets", icon: Ticket },
   { href: "/knowledge", label: "Knowledge Base", icon: BookOpen },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/users", label: "Users", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/wall", label: "Wall Display", icon: Monitor },
+  {
+    href: "/reports",
+    label: "Reports",
+    icon: BarChart3,
+    roles: ["admin", "agent"],
+  },
+  {
+    href: "/users",
+    label: "Users",
+    icon: Users,
+    roles: ["admin"],
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: Settings,
+    roles: ["admin", "agent"],
+  },
+  {
+    href: "/wall",
+    label: "Wall Display",
+    icon: Monitor,
+    roles: ["admin", "agent"],
+  },
 ];
 
-export function Sidebar() {
+export function Sidebar({ user }: { user: User }) {
   const pathname = usePathname();
+
+  const visible = navItems.filter(
+    (item) => !item.roles || item.roles.includes(user.role)
+  );
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-950">
@@ -42,7 +73,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => {
+        {visible.map((item) => {
           const active =
             pathname === item.href || pathname.startsWith(item.href + "/");
           return (
@@ -66,16 +97,16 @@ export function Sidebar() {
       <div className="border-t border-slate-800 p-4">
         <div className="mb-3 flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 text-sm font-medium text-emerald-400">
-            {currentUser.name
+            {user.name
               .split(" ")
               .map((n) => n[0])
               .join("")
               .slice(0, 2)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{currentUser.name}</p>
+            <p className="truncate text-sm font-medium">{user.name}</p>
             <p className="truncate text-xs capitalize text-slate-500">
-              {currentUser.role}
+              {user.role}
             </p>
           </div>
         </div>
