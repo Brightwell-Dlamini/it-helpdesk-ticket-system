@@ -7,13 +7,14 @@ import {
   updateTicketStatus,
   addComment,
 } from "@/app/actions/tickets";
-import type { TicketStatus } from "@/types";
+import type { TicketStatus, UserRole } from "@/types";
 import { useRouter } from "next/navigation";
 
 interface TicketActionsProps {
   ticketId: string;
   currentStatus: TicketStatus;
   isAssigned: boolean;
+  role: UserRole;
 }
 
 const STATUS_OPTIONS: { label: string; value: TicketStatus }[] = [
@@ -28,11 +29,27 @@ export function TicketActions({
   ticketId,
   currentStatus,
   isAssigned,
+  role,
 }: TicketActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
+
+  const canManage = role === "admin" || role === "agent";
+
+  if (!canManage) {
+    return (
+      <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          Actions
+        </h3>
+        <p className="mt-2 text-xs text-slate-500">
+          Status and assignment are managed by the support team.
+        </p>
+      </div>
+    );
+  }
 
   function runAction(
     action: () => Promise<{ success: boolean; error?: string }>,
@@ -85,6 +102,7 @@ export function TicketActions({
             {STATUS_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
+                type="button"
                 disabled={opt.value === currentStatus || isPending}
                 className={`block w-full px-3 py-2 text-left text-sm transition-colors ${
                   opt.value === currentStatus
@@ -131,14 +149,17 @@ export function TicketActions({
 
 interface CommentFormProps {
   ticketId: string;
+  role: UserRole;
 }
 
-export function CommentForm({ ticketId }: CommentFormProps) {
+export function CommentForm({ ticketId, role }: CommentFormProps) {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [isInternal, setIsInternal] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  const canInternal = role === "admin" || role === "agent";
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -149,7 +170,7 @@ export function CommentForm({ ticketId }: CommentFormProps) {
       const result = await addComment({
         ticketId,
         content: content.trim(),
-        isInternal,
+        isInternal: canInternal ? isInternal : false,
       });
 
       if (result.success) {
@@ -167,21 +188,25 @@ export function CommentForm({ ticketId }: CommentFormProps) {
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Add a reply or internal note..."
+        placeholder="Add a reply or note..."
         rows={3}
         disabled={isPending}
         className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm placeholder:text-slate-500 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 resize-none disabled:opacity-60"
       />
       <div className="mt-3 flex items-center justify-between">
-        <label className="flex items-center gap-2 text-xs text-slate-400">
-          <input
-            type="checkbox"
-            checked={isInternal}
-            onChange={(e) => setIsInternal(e.target.checked)}
-            className="rounded"
-          />
-          Internal note (not visible to requester)
-        </label>
+        {canInternal ? (
+          <label className="flex items-center gap-2 text-xs text-slate-400">
+            <input
+              type="checkbox"
+              checked={isInternal}
+              onChange={(e) => setIsInternal(e.target.checked)}
+              className="rounded"
+            />
+            Internal note (not visible to requester)
+          </label>
+        ) : (
+          <span />
+        )}
         <Button type="submit" size="sm" disabled={isPending || !content.trim()}>
           {isPending ? "Posting..." : "Post Reply"}
         </Button>
