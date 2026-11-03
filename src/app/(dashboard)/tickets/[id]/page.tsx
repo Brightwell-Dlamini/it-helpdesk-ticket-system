@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/header";
-import { getTicketById, getComments, getUsers } from "@/lib/data";
+import { getTicketById, getComments, getUsers, getCurrentUser } from "@/lib/data";
+import { currentUser as mockUser } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import {
   getPriorityColor,
@@ -15,6 +16,7 @@ import {
   Tag,
   MessageSquare,
   AlertCircle,
+  Activity,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -26,17 +28,29 @@ interface PageProps {
 
 export default async function TicketDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [ticket, ticketComments, users] = await Promise.all([
+  const [ticket, ticketComments, users, me] = await Promise.all([
     getTicketById(id),
     getComments(id),
     getUsers(),
+    getCurrentUser(),
   ]);
 
   if (!ticket) {
     notFound();
   }
 
+  const role = (me ?? mockUser).role;
   const assignee = users.find((u) => u.id === ticket.assigneeId);
+
+  const visibleComments =
+    role === "requester"
+      ? ticketComments.filter((c) => !c.isInternal)
+      : ticketComments;
+
+  const sorted = [...visibleComments].sort(
+    (a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
 
   return (
     <div>
@@ -100,53 +114,77 @@ export default async function TicketDetailPage({ params }: PageProps) {
             <div className="rounded-xl border border-slate-800 bg-slate-900/50">
               <div className="flex items-center gap-2 border-b border-slate-800 px-5 py-4">
                 <MessageSquare className="h-4 w-4 text-slate-400" />
-                <h2 className="font-semibold">
-                  Activity ({ticketComments.length})
-                </h2>
+                <h2 className="font-semibold">Activity ({sorted.length})</h2>
               </div>
 
               <div className="divide-y divide-slate-800">
-                {ticketComments.length === 0 ? (
+                {sorted.length === 0 ? (
                   <div className="px-5 py-8 text-center text-sm text-slate-500">
-                    No comments yet. Be the first to respond.
+                    No activity yet. Be the first to respond.
                   </div>
                 ) : (
-                  ticketComments.map((comment) => (
-                    <div key={comment.id} className="px-5 py-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs font-medium text-emerald-400">
-                          {comment.authorName
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .slice(0, 2)}
+                  sorted.map((comment) => {
+                    const isSystem =
+                      comment.isSystem || comment.authorName === "System";
+
+                    if (isSystem) {
+                      return (
+                        <div
+                          key={comment.id}
+                          className="flex items-start gap-3 px-5 py-3 bg-slate-950/40"
+                        >
+                          <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-800">
+                            <Activity className="h-3.5 w-3.5 text-slate-400" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-400">
+                              <span className="font-medium text-slate-300">System</span>
+                              <span className="mx-1.5 text-slate-600">·</span>
+                              {formatRelative(comment.createdAt)}
+                            </p>
+                            <p className="mt-0.5 text-sm text-slate-300">{comment.content}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium">
-                            {comment.authorName}
-                            <span className="ml-2 text-xs font-normal capitalize text-slate-500">
-                              {comment.authorRole}
-                            </span>
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {formatRelative(comment.createdAt)}
-                          </p>
+                      );
+                    }
+
+                    return (
+                      <div key={comment.id} className="px-5 py-4">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs font-medium text-emerald-400">
+                            {comment.authorName
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .slice(0, 2)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">
+                              {comment.authorName}
+                              <span className="ml-2 text-xs font-normal capitalize text-slate-500">
+                                {comment.authorRole}
+                              </span>
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {formatRelative(comment.createdAt)}
+                            </p>
+                          </div>
+                          {comment.isInternal && (
+                            <Badge className="ml-auto bg-amber-500/15 text-amber-400 border-amber-500/30 text-[10px]">
+                              Internal
+                            </Badge>
+                          )}
                         </div>
-                        {comment.isInternal && (
-                          <Badge className="ml-auto bg-amber-500/15 text-amber-400 border-amber-500/30 text-[10px]">
-                            Internal
-                          </Badge>
-                        )}
+                        <p className="text-sm text-slate-300 leading-relaxed pl-11">
+                          {comment.content}
+                        </p>
                       </div>
-                      <p className="text-sm text-slate-300 leading-relaxed pl-11">
-                        {comment.content}
-                      </p>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
-              <CommentForm ticketId={ticket.id} />
+              <CommentForm ticketId={ticket.id} role={role} />
             </div>
           </div>
 
@@ -202,9 +240,7 @@ export default async function TicketDetailPage({ params }: PageProps) {
                 {ticket.firstResponseAt && (
                   <div>
                     <dt className="text-slate-500 mb-1">First Response</dt>
-                    <dd className="font-medium">
-                      {formatDate(ticket.firstResponseAt)}
-                    </dd>
+                    <dd className="font-medium">{formatDate(ticket.firstResponseAt)}</dd>
                   </div>
                 )}
                 {ticket.resolvedAt && (
@@ -222,6 +258,7 @@ export default async function TicketDetailPage({ params }: PageProps) {
               ticketId={ticket.id}
               currentStatus={ticket.status}
               isAssigned={Boolean(ticket.assigneeId)}
+              role={role}
             />
           </div>
         </div>
