@@ -1,5 +1,5 @@
 import { Header } from "@/components/layout/header";
-import { users } from "@/lib/mock-data";
+import { getUsers } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 
 const roleColors: Record<string, string> = {
@@ -8,7 +8,9 @@ const roleColors: Record<string, string> = {
   requester: "bg-slate-500/15 text-slate-400 border-slate-500/30",
 };
 
-export default function UsersPage() {
+export default async function UsersPage() {
+  const users = await getUsers();
+
   return (
     <div>
       <Header title="Users & Roles" description="Manage team members and access" />
