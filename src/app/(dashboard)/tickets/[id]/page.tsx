@@ -1,5 +1,5 @@
 import { Header } from "@/components/layout/header";
-import { tickets, comments, users } from "@/lib/mock-data";
+import { getTicketById, getComments, getUsers } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
   getPriorityColor,
@@ -26,13 +26,16 @@ interface PageProps {
 
 export default async function TicketDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const ticket = tickets.find((t) => t.id === id);
+  const [ticket, ticketComments, users] = await Promise.all([
+    getTicketById(id),
+    getComments(id),
+    getUsers(),
+  ]);
 
   if (!ticket) {
     notFound();
   }
 
-  const ticketComments = comments.filter((c) => c.ticketId === ticket.id);
   const assignee = users.find((u) => u.id === ticket.assigneeId);
 
   return (
@@ -194,6 +197,14 @@ export default async function TicketDetailPage({ params }: PageProps) {
                       Due
                     </dt>
                     <dd className="font-medium">{formatDate(ticket.dueAt)}</dd>
+                  </div>
+                )}
+                {ticket.firstResponseAt && (
+                  <div>
+                    <dt className="text-slate-500 mb-1">First Response</dt>
+                    <dd className="font-medium">
+                      {formatDate(ticket.firstResponseAt)}
+                    </dd>
                   </div>
                 )}
                 {ticket.resolvedAt && (
