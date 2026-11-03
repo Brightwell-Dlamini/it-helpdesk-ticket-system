@@ -84,3 +84,15 @@ export interface DashboardStats {
   unassigned: number;
   critical: number;
 }
+
+export interface Attachment {
+  id: string;
+  ticketId: string;
+  uploadedBy: string;
+  uploaderName?: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  storagePath: string;
+  createdAt: string;
+}
