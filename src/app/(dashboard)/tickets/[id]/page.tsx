@@ -1,5 +1,5 @@
 import { Header } from "@/components/layout/header";
-import { getTicketById, getComments, getUsers, getCurrentUser } from "@/lib/data";
+import { getTicketById, getComments, getUsers, getCurrentUser, getAttachments } from "@/lib/data";
 import { currentUser as mockUser } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TicketActions, CommentForm } from "@/components/tickets/ticket-actions";
+import { TicketAttachments } from "@/components/tickets/ticket-attachments";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -28,11 +29,12 @@ interface PageProps {
 
 export default async function TicketDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [ticket, ticketComments, users, me] = await Promise.all([
+  const [ticket, ticketComments, users, me, attachments] = await Promise.all([
     getTicketById(id),
     getComments(id),
     getUsers(),
     getCurrentUser(),
+    getAttachments(id),
   ]);
 
   if (!ticket) {
@@ -253,6 +255,12 @@ export default async function TicketDetailPage({ params }: PageProps) {
                 )}
               </dl>
             </div>
+
+            <TicketAttachments
+              ticketId={ticket.id}
+              attachments={attachments}
+              canUpload={true}
+            />
 
             <TicketActions
               ticketId={ticket.id}
