@@ -3,13 +3,21 @@
 import { Bell, Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 interface HeaderProps {
   title: string;
   description?: string;
+  actions?: ReactNode;
+  showNewTicket?: boolean;
 }
 
-export function Header({ title, description }: HeaderProps) {
+export function Header({
+  title,
+  description,
+  actions,
+  showNewTicket = true,
+}: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-800 bg-slate-950/80 px-6 backdrop-blur-md">
       <div>
@@ -29,17 +37,24 @@ export function Header({ title, description }: HeaderProps) {
           />
         </div>
 
-        <button className="relative rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-900 hover:text-slate-100">
+        <button
+          type="button"
+          className="relative rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-900 hover:text-slate-100"
+          aria-label="Notifications"
+        >
           <Bell className="h-5 w-5" />
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-emerald-500" />
         </button>
 
-        <Link href="/tickets/new">
-          <Button size="sm">
-            <Plus className="h-4 w-4" />
-            New Ticket
-          </Button>
-        </Link>
+        {actions}
+        {!actions && showNewTicket && (
+          <Link href="/tickets/new">
+            <Button size="sm">
+              <Plus className="h-4 w-4" />
+              New Ticket
+            </Button>
+          </Link>
+        )}
       </div>
     </header>
   );
