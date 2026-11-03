@@ -9,6 +9,7 @@ import {
   BarChart3,
   Users,
   Settings,
+  Monitor,
   LifeBuoy,
   LogOut,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/users", label: "Users", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/wall", label: "Wall Display", icon: Monitor },
 ];
 
 export function Sidebar() {
