@@ -37,6 +37,7 @@ function mapTicket(row: Record<string, unknown>, profiles?: Map<string, { full_n
     updatedAt: row.updated_at as string,
     resolvedAt: (row.resolved_at as string) ?? undefined,
     dueAt: (row.due_at as string) ?? undefined,
+    firstResponseAt: (row.first_response_at as string) ?? undefined,
     slaBreached:
       (row.sla_breached as boolean) ||
       isSlaBreached(
