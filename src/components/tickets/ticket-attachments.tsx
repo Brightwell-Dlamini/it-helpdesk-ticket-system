@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Paperclip, Upload, FileText, Image as ImageIcon } from "lucide-react";
+import {
+  Paperclip,
+  Upload,
+  FileText,
+  Image as ImageIcon,
+  Download,
+} from "lucide-react";
 import type { Attachment } from "@/types";
 import { formatRelative } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -92,6 +98,22 @@ export function TicketAttachments({
     });
   }
 
+  async function handleDownload(file: Attachment) {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.storage
+        .from("ticket-attachments")
+        .createSignedUrl(file.storagePath, 60);
+      if (error || !data?.signedUrl) {
+        setError(error?.message ?? "Could not generate download link");
+        return;
+      }
+      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Download failed");
+    }
+  }
+
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
       <div className="mb-4 flex items-center justify-between">
@@ -138,6 +160,14 @@ export function TicketAttachments({
                   {formatRelative(file.createdAt)}
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => void handleDownload(file)}
+                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-emerald-400"
+                aria-label={`Download ${file.fileName}`}
+              >
+                <Download className="h-4 w-4" />
+              </button>
             </li>
           ))}
         </ul>
