@@ -26,11 +26,22 @@ export function TicketsBoard({ tickets }: { tickets: Ticket[] }) {
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
   const [search, setSearch] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [quickFilter, setQuickFilter] = useState<
+    "all" | "unassigned" | "critical"
+  >("all");
 
   const filtered = useMemo(() => {
     return tickets.filter((ticket) => {
       if (statusFilter !== "all" && ticket.status !== statusFilter) return false;
       if (priorityFilter !== "all" && ticket.priority !== priorityFilter)
+        return false;
+      if (quickFilter === "unassigned" && ticket.assigneeId) return false;
+      if (quickFilter === "critical" && ticket.priority !== "critical")
+        return false;
+      if (
+        quickFilter !== "all" &&
+        ["resolved", "closed"].includes(ticket.status)
+      )
         return false;
       if (search.trim()) {
         const q = search.toLowerCase();
@@ -49,7 +60,7 @@ export function TicketsBoard({ tickets }: { tickets: Ticket[] }) {
       }
       return true;
     });
-  }, [tickets, statusFilter, priorityFilter, search]);
+  }, [tickets, statusFilter, priorityFilter, quickFilter, search]);
 
   return (
     <div className="p-4 sm:p-6">
@@ -71,6 +82,29 @@ export function TicketsBoard({ tickets }: { tickets: Ticket[] }) {
               <X className="h-4 w-4" />
             </button>
           )}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              ["all", "All active"],
+              ["unassigned", "Unassigned"],
+              ["critical", "Critical"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setQuickFilter(value)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                quickFilter === value
+                  ? "bg-emerald-600 text-white"
+                  : "border border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <div className="flex flex-col gap-2 sm:gap-3">
