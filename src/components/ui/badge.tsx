@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 interface BadgeProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   variant?: "default" | "outline";
 }
