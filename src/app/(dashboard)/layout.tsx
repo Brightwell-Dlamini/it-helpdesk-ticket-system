@@ -1,13 +1,18 @@
 import { Sidebar } from "@/components/layout/sidebar";
+import { getCurrentUser } from "@/lib/data";
+import { currentUser as mockUser } from "@/lib/mock-data";
+import type { ReactNode } from "react";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
+  const user = (await getCurrentUser()) ?? mockUser;
+
   return (
     <div className="min-h-screen">
-      <Sidebar />
+      <Sidebar user={user} />
       <main className="pl-64">{children}</main>
     </div>
   );
