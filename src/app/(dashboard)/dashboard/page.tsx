@@ -1,5 +1,5 @@
 import { Header } from "@/components/layout/header";
-import { dashboardStats, tickets } from "@/lib/mock-data";
+import { getDashboardStats, getTickets } from "@/lib/data";
 import {
   Ticket,
   Clock,
@@ -17,52 +17,57 @@ import {
 } from "@/lib/utils";
 import Link from "next/link";
 
-const stats = [
-  {
-    label: "Open Tickets",
-    value: dashboardStats.openTickets,
-    icon: Ticket,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-  },
-  {
-    label: "In Progress",
-    value: dashboardStats.inProgress,
-    icon: Activity,
-    color: "text-violet-400",
-    bg: "bg-violet-500/10",
-  },
-  {
-    label: "Resolved Today",
-    value: dashboardStats.resolvedToday,
-    icon: CheckCircle2,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-  },
-  {
-    label: "SLA Compliance",
-    value: `${dashboardStats.slaCompliance}%`,
-    icon: Clock,
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
-  },
-  {
-    label: "Unassigned",
-    value: dashboardStats.unassigned,
-    icon: Users,
-    color: "text-slate-400",
-    bg: "bg-slate-500/10",
-  },
-  {
-    label: "Critical",
-    value: dashboardStats.critical,
-    icon: AlertTriangle,
-    color: "text-red-400",
-    bg: "bg-red-500/10",
-  },
-];
+export default async function DashboardPage() {
+  const [dashboardStats, tickets] = await Promise.all([
+    getDashboardStats(),
+    getTickets(),
+  ]);
 
-export default function DashboardPage() {
+  const stats = [
+    {
+      label: "Open Tickets",
+      value: dashboardStats.openTickets,
+      icon: Ticket,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+    },
+    {
+      label: "In Progress",
+      value: dashboardStats.inProgress,
+      icon: Activity,
+      color: "text-violet-400",
+      bg: "bg-violet-500/10",
+    },
+    {
+      label: "Resolved Today",
+      value: dashboardStats.resolvedToday,
+      icon: CheckCircle2,
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+    },
+    {
+      label: "SLA Compliance",
+      value: `${dashboardStats.slaCompliance}%`,
+      icon: Clock,
+      color: "text-amber-400",
+      bg: "bg-amber-500/10",
+    },
+    {
+      label: "Unassigned",
+      value: dashboardStats.unassigned,
+      icon: Users,
+      color: "text-slate-400",
+      bg: "bg-slate-500/10",
+    },
+    {
+      label: "Critical",
+      value: dashboardStats.critical,
+      icon: AlertTriangle,
+      color: "text-red-400",
+      bg: "bg-red-500/10",
+    },
+  ];
+
   const recent = tickets.slice(0, 5);
 
   return (
