@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/tickets";
 import type { TicketStatus, UserRole } from "@/types";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 
 interface TicketActionsProps {
   ticketId: string;
@@ -32,6 +33,7 @@ export function TicketActions({
   role,
 }: TicketActionsProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
@@ -60,9 +62,12 @@ export function TicketActions({
       const result = await action();
       if (result.success) {
         setMessage(successMsg);
+        toast(successMsg, "success");
         router.refresh();
       } else {
-        setMessage(result.error ?? "Action failed");
+        const err = result.error ?? "Action failed";
+        setMessage(err);
+        toast(err, "error");
       }
     });
   }
@@ -154,6 +159,7 @@ interface CommentFormProps {
 
 export function CommentForm({ ticketId, role }: CommentFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [content, setContent] = useState("");
   const [isInternal, setIsInternal] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -176,9 +182,12 @@ export function CommentForm({ ticketId, role }: CommentFormProps) {
       if (result.success) {
         setContent("");
         setIsInternal(false);
+        toast("Reply posted", "success");
         router.refresh();
       } else {
-        setError(result.error ?? "Failed to post comment");
+        const err = result.error ?? "Failed to post comment";
+        setError(err);
+        toast(err, "error");
       }
     });
   }
