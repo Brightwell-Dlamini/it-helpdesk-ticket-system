@@ -58,6 +58,7 @@ export interface Comment {
   authorRole: UserRole;
   content: string;
   isInternal: boolean;
+  isSystem?: boolean;
   createdAt: string;
 }
 
