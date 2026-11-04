@@ -60,7 +60,7 @@ export function TicketsBoard({
 
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
   const [search, setSearch] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
   const [quickFilter, setQuickFilter] = useState<QuickFilter>(isRequester ? "mine" : "all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [savedViews, setSavedViews] = useState<SavedView[]>(DEFAULT_AGENT_VIEWS);
@@ -199,10 +199,7 @@ export function TicketsBoard({
             className="h-11 w-full rounded-lg border border-slate-800 bg-slate-900 pl-9 pr-9 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 sm:h-10"
           />
           {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
-            >
+            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -278,7 +275,6 @@ export function TicketsBoard({
               </button>
             ))}
           </div>
-
           <div className="flex items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <span className="hidden shrink-0 text-xs text-slate-500 sm:inline">Priority</span>
             {["all", "critical", "high", "medium", "low"].map((p) => (
@@ -307,4 +303,109 @@ export function TicketsBoard({
             <Button size="sm" variant="secondary" disabled={isPending} onClick={() => runBulk("Assigned to me", (id) => assignToMe(id))}>
               Assign to me
             </Button>
-            <Button size="sm" variant="secondary" disabled={isPending} onClick={() => runBulk("Marked in progress", (id) => updateTicketStatus(id, "in_progress"
+            <Button size="sm" variant="secondary" disabled={isPending} onClick={() => runBulk("In progress", (id) => updateTicketStatus(id, "in_progress")}>
+              In progress
+            </Button>
+            <Button size="sm" disabled={isPending} onClick={() => runBulk("Resolved", (id) => updateTicketStatus(id, "resolved")}>
+              Resolve
+            </Button>
+            <button type="button" className="text-xs text-slate-400 hover:text-white" onClick={() => setSelected(new Set())}>
+              Clear
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-slate-800 px-4 py-12 text-center text-sm text-slate-500">No tickets match your filters.</div>
+        ) : (
+          filtered.map((ticket) => (
+            <div key={ticket.id} className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+              {canBulk && (
+                <label className="mb-2 flex items-center gap-2 text-xs text-slate-500">
+                  <input type="checkbox" checked={selected.has(ticket.id)} onChange={() => toggleSelect(ticket.id)} className="rounded border-slate-600" />
+                  Select
+                </label>
+              )}
+              <Link href={`/tickets/${ticket.id}`} className="block">
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-slate-500">{ticket.number}</p>
+                    <p className="mt-0.5 line-clamp-2 font-medium leading-snug">{ticket.title}</p>
+                  </div>
+                  <Badge className={`shrink-0 ${getPriorityColor(ticket.priority)}`}>{ticket.priority}</Badge>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className={getStatusColor(ticket.status)}>{getStatusLabel(ticket.status)}</Badge>
+                  <span className="text-xs capitalize text-slate-500">{ticket.category}</span>
+                  <span className="text-xs text-slate-500">{formatRelative(ticket.updatedAt)}</span>
+                </div>
+              </Link>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="hidden overflow-hidden rounded-xl border border-slate-800 md:block">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left text-sm">
+            <thead className="border-b border-slate-800 bg-slate-900/80 text-xs uppercase tracking-wider text-slate-500">
+              <tr>
+                {canBulk && (
+                  <th className="w-10 px-3 py-3">
+                    <input type="checkbox" checked={filtered.length > 0 && selected.size === filtered.length} onChange={toggleSelectAll} className="rounded border-slate-600" aria-label="Select all" />
+                  </th>
+                )}
+                <th className="px-4 py-3 font-medium">Ticket</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Priority</th>
+                <th className="hidden px-4 py-3 font-medium lg:table-cell">Category</th>
+                <th className="hidden px-4 py-3 font-medium xl:table-cell">Requester</th>
+                <th className="hidden px-4 py-3 font-medium xl:table-cell">Assignee</th>
+                <th className="px-4 py-3 font-medium">Updated</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={canBulk ? 8 : 7} className="px-4 py-12 text-center text-sm text-slate-500">
+                    No tickets match your filters.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((ticket) => (
+                  <tr key={ticket.id} className="bg-slate-950/40 transition-colors hover:bg-slate-900/60">
+                    {canBulk && (
+                      <td className="px-3 py-3">
+                        <input type="checkbox" checked={selected.has(ticket.id)} onChange={() => toggleSelect(ticket.id)} className="rounded border-slate-600" aria-label={`Select ${ticket.number}`} />
+                      </td>
+                    )}
+                    <td className="px-4 py-3">
+                      <Link href={`/tickets/${ticket.id}`} className="block hover:text-emerald-400">
+                        <span className="text-xs font-medium text-slate-500">{ticket.number}</span>
+                        <p className="mt-0.5 max-w-xs truncate font-medium">{ticket.title}</p>
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge className={getStatusColor(ticket.status)}>{getStatusLabel(ticket.status)}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge className={getPriorityColor(ticket.priority)}>{ticket.priority}</Badge>
+                    </td>
+                    <td className="hidden px-4 py-3 capitalize text-slate-400 lg:table-cell">{ticket.category}</td>
+                    <td className="hidden px-4 py-3 text-slate-400 xl:table-cell">{ticket.requesterName}</td>
+                    <td className="hidden px-4 py-3 text-slate-400 xl:table-cell">
+                      {ticket.assigneeName || <span className="text-amber-400/80">Unassigned</span>}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">{formatRelative(ticket.updatedAt)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
