@@ -31,6 +31,7 @@ create table public.tickets (
   tags text[] default '{}',
   due_at timestamptz,
   resolved_at timestamptz,
+  first_response_at timestamptz,
   sla_breached boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
