@@ -18,8 +18,8 @@ export function AppShell({
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-slate-950">
-        <div className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-slate-800/80 bg-slate-950/95 px-4 backdrop-blur-xl lg:hidden">
+      <div className="mesh-bg min-h-screen">
+        <div className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-slate-800/60 bg-slate-950/80 px-4 backdrop-blur-xl lg:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -29,7 +29,7 @@ export function AppShell({
             <Menu className="h-5 w-5" />
           </button>
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-md shadow-emerald-900/30">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-700 shadow-lg shadow-emerald-900/40">
               <LifeBuoy className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-semibold tracking-tight">ApexDesk</span>
@@ -40,7 +40,7 @@ export function AppShell({
         {mobileOpen && (
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-black/65 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm animate-fade-in lg:hidden"
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
           />
@@ -53,7 +53,9 @@ export function AppShell({
         />
 
         <main className="lg:pl-64">
-          <div className="mx-auto w-full max-w-[1600px]">{children}</div>
+          <div className="mx-auto w-full max-w-[1600px] animate-fade-in">
+            {children}
+          </div>
         </main>
       </div>
     </ToastProvider>

@@ -52,27 +52,34 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4">
-      {/* Ambient background */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-emerald-600/10 blur-3xl" />
-        <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-violet-600/10 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900/40 via-slate-950 to-slate-950" />
+        <div className="absolute -left-40 top-[-10%] h-[28rem] w-[28rem] rounded-full bg-emerald-500/12 blur-[100px]" />
+        <div className="absolute -right-40 bottom-[-10%] h-[28rem] w-[28rem] rounded-full bg-violet-600/10 blur-[100px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_#020617_70%)]" />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(148,163,184,1) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,1) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+          }}
+        />
       </div>
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md animate-scale-in">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-xl shadow-emerald-900/40">
-            <LifeBuoy className="h-7 w-7 text-white" />
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 shadow-2xl shadow-emerald-900/50 ring-1 ring-emerald-400/30">
+            <LifeBuoy className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-50">
+          <h1 className="text-3xl font-bold tracking-tight text-gradient">
             ApexDesk
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-slate-400">
             Sign in to the IT Service Desk
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-slate-900/50 p-6 shadow-2xl shadow-black/40 backdrop-blur-xl">
+        <div className="glass rounded-2xl p-6 sm:p-7">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-xs font-medium text-slate-400">
@@ -84,7 +91,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isPending}
-                className="mt-1.5 w-full rounded-lg border border-slate-800 bg-slate-950/80 px-3 py-2.5 text-sm transition-colors focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-60"
+                className="mt-1.5 w-full rounded-lg border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm transition-colors focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-60"
               />
             </div>
             <div>
@@ -101,18 +108,18 @@ export default function LoginPage() {
                     ? "Enter password"
                     : "Demo mode — any value"
                 }
-                className="mt-1.5 w-full rounded-lg border border-slate-800 bg-slate-950/80 px-3 py-2.5 text-sm transition-colors focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-60"
+                className="mt-1.5 w-full rounded-lg border border-slate-700/80 bg-slate-950/70 px-3 py-2.5 text-sm transition-colors focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-60"
               />
             </div>
 
             {error && (
-              <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+              <p className="rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-400">
                 {error}
               </p>
             )}
 
             <Button
-              className="w-full shadow-lg shadow-emerald-900/30"
+              className="w-full shadow-xl shadow-emerald-900/40"
               size="lg"
               type="submit"
               disabled={isPending}

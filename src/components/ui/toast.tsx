@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { CheckCircle2, AlertCircle, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ToastKind = "success" | "error" | "info";
@@ -33,7 +33,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setItems((prev) => [...prev, { id, message, kind }]);
     window.setTimeout(() => {
       setItems((prev) => prev.filter((t) => t.id !== id));
-    }, 3200);
+    }, 3400);
   }, []);
 
   const value = useMemo(() => ({ toast }), [toast]);
@@ -49,24 +49,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={item.id}
             className={cn(
-              "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-md",
+              "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border px-4 py-3 shadow-2xl shadow-black/50 backdrop-blur-xl animate-slide-in-right",
               item.kind === "success" &&
-                "border-emerald-500/30 bg-slate-900/95 text-emerald-100",
+                "border-emerald-500/35 bg-slate-950/90 text-emerald-50",
               item.kind === "error" &&
-                "border-red-500/30 bg-slate-900/95 text-red-100",
+                "border-red-500/35 bg-slate-950/90 text-red-50",
               item.kind === "info" &&
-                "border-slate-600 bg-slate-900/95 text-slate-100"
+                "border-slate-600/50 bg-slate-950/90 text-slate-100"
             )}
           >
             {item.kind === "success" ? (
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
             ) : item.kind === "error" ? (
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-            ) : null}
+            ) : (
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
+            )}
             <p className="flex-1 text-sm leading-snug">{item.message}</p>
             <button
               type="button"
-              className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
+              className="rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-800 hover:text-white"
               onClick={() =>
                 setItems((prev) => prev.filter((t) => t.id !== item.id))
               }

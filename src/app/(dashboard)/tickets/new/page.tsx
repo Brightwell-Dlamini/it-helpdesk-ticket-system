@@ -2,17 +2,31 @@
 
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createTicket } from "@/app/actions/tickets";
 import type { TicketCategory, TicketPriority } from "@/types";
+import { cn } from "@/lib/utils";
 
 const categories: TicketCategory[] = [
-  "hardware", "software", "network", "access", "email", "security", "other",
+  "hardware",
+  "software",
+  "network",
+  "access",
+  "email",
+  "security",
+  "other",
 ];
 const priorities: TicketPriority[] = ["low", "medium", "high", "critical"];
+
+const priorityStyles: Record<TicketPriority, string> = {
+  low: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 ring-emerald-500/30",
+  medium: "border-amber-500/40 bg-amber-500/10 text-amber-300 ring-amber-500/30",
+  high: "border-orange-500/40 bg-orange-500/10 text-orange-300 ring-orange-500/30",
+  critical: "border-red-500/50 bg-red-500/15 text-red-300 ring-red-500/40",
+};
 
 export default function NewTicketPage() {
   const router = useRouter();
@@ -45,51 +59,128 @@ export default function NewTicketPage() {
   return (
     <div>
       <Header title="New Ticket" description="Create a new support request" />
-      <div className="p-6 max-w-2xl">
+      <div className="mx-auto max-w-2xl p-4 sm:p-6">
         <div className="mb-6">
-          <Link href="/tickets" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors">
+          <Link
+            href="/tickets"
+            className="inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-emerald-400"
+          >
             <ArrowLeft className="h-4 w-4" />
             Back to tickets
           </Link>
         </div>
-        <form onSubmit={handleSubmit} className="rounded-xl border border-slate-800 bg-slate-900/50 p-6 space-y-5">
+
+        <form
+          onSubmit={handleSubmit}
+          className="card animate-scale-in space-y-6 p-6 sm:p-8"
+        >
+          <div className="flex items-start gap-3 border-b border-slate-800/70 pb-5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600/15 ring-1 ring-emerald-500/25">
+              <Sparkles className="h-5 w-5 text-emerald-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-slate-50">Describe the issue</h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Clear titles and detail help agents resolve faster.
+              </p>
+            </div>
+          </div>
+
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">
+            <label className="mb-1.5 block text-xs font-medium text-slate-400">
               Title <span className="text-red-400">*</span>
             </label>
-            <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Brief summary of the issue" disabled={isPending}
-              className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm placeholder:text-slate-500 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-60" />
+            <input
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Brief summary of the issue"
+              disabled={isPending}
+              className="w-full rounded-lg border border-slate-800 bg-slate-950/80 px-3 py-2.5 text-sm placeholder:text-slate-500 transition-colors focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-60"
+            />
           </div>
+
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">
+            <label className="mb-1.5 block text-xs font-medium text-slate-400">
               Description <span className="text-red-400">*</span>
             </label>
-            <textarea required value={description} onChange={(e) => setDescription(e.target.value)}
-              placeholder="Provide as much detail as possible..." rows={6} disabled={isPending}
-              className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm placeholder:text-slate-500 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 resize-y disabled:opacity-60" />
+            <textarea
+              required
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What happened? Steps to reproduce, error messages, impact…"
+              rows={6}
+              disabled={isPending}
+              className="w-full resize-y rounded-lg border border-slate-800 bg-slate-950/80 px-3 py-2.5 text-sm placeholder:text-slate-500 transition-colors focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-60"
+            />
           </div>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value as TicketCategory)} disabled={isPending}
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 capitalize disabled:opacity-60">
-                {categories.map((c) => (<option key={c} value={c} className="capitalize">{c}</option>))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Priority</label>
-              <select value={priority} onChange={(e) => setPriority(e.target.value as TicketPriority)} disabled={isPending}
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 capitalize disabled:opacity-60">
-                {priorities.map((p) => (<option key={p} value={p} className="capitalize">{p}</option>))}
-              </select>
+
+          <div>
+            <label className="mb-2 block text-xs font-medium text-slate-400">
+              Category
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  disabled={isPending}
+                  onClick={() => setCategory(c)}
+                  className={cn(
+                    "chip capitalize",
+                    category === c ? "chip-active" : "chip-idle"
+                  )}
+                >
+                  {c}
+                </button>
+              ))}
             </div>
           </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-medium text-slate-400">
+              Priority
+            </label>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {priorities.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  disabled={isPending}
+                  onClick={() => setPriority(p)}
+                  className={cn(
+                    "rounded-xl border px-3 py-2.5 text-xs font-semibold capitalize transition-all",
+                    priority === p
+                      ? cn(priorityStyles[p], "ring-1")
+                      : "border-slate-800 bg-slate-950/50 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                  )}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {error && (
-            <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>
+            <p className="rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+              {error}
+            </p>
           )}
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <Link href="/tickets"><Button type="button" variant="ghost" size="sm" disabled={isPending}>Cancel</Button></Link>
-            <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Creating..." : "Create Ticket"}</Button>
+
+          <div className="flex items-center justify-end gap-3 border-t border-slate-800/70 pt-5">
+            <Link href="/tickets">
+              <Button type="button" variant="ghost" size="sm" disabled={isPending}>
+                Cancel
+              </Button>
+            </Link>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isPending}
+              className="min-w-[8rem] shadow-lg shadow-emerald-900/30"
+            >
+              {isPending ? "Creating..." : "Create Ticket"}
+            </Button>
           </div>
         </form>
       </div>
