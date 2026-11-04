@@ -11,6 +11,7 @@
 
 html {
   -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -19,6 +20,19 @@ body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
+  antialiased: true;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(16, 185, 129, 0.35);
+  color: #ecfdf5;
+}
+
+:focus-visible {
+  outline: 2px solid rgb(16 185 129 / 0.7);
+  outline-offset: 2px;
 }
 
 ::-webkit-scrollbar {
@@ -39,4 +53,34 @@ body {
 .break-safe {
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-slate-800/90 bg-slate-900/50 shadow-sm shadow-black/20;
+  }
+
+  .card-hover {
+    @apply transition-colors duration-150 hover:border-slate-700 hover:bg-slate-900/70;
+  }
+
+  .stat-card {
+    @apply relative overflow-hidden rounded-xl border border-slate-800/90 bg-gradient-to-br from-slate-900/80 to-slate-950/80 p-4 shadow-sm shadow-black/20;
+  }
+
+  .input-base {
+    @apply rounded-lg border border-slate-800 bg-slate-950 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600;
+  }
+
+  .chip {
+    @apply rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-150;
+  }
+
+  .chip-active {
+    @apply bg-emerald-600 text-white shadow-sm shadow-emerald-900/40;
+  }
+
+  .chip-idle {
+    @apply border border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-700 hover:text-slate-200;
+  }
 }

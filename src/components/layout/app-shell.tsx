@@ -19,17 +19,17 @@ export function AppShell({
   return (
     <ToastProvider>
       <div className="min-h-screen bg-slate-950">
-        <div className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-slate-800 bg-slate-950 px-4 lg:hidden">
+        <div className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-slate-800/80 bg-slate-950/95 px-4 backdrop-blur-xl lg:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-900 hover:text-white"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-slate-900 hover:text-white"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
           </button>
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-md shadow-emerald-900/30">
               <LifeBuoy className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-semibold tracking-tight">ApexDesk</span>
@@ -40,7 +40,7 @@ export function AppShell({
         {mobileOpen && (
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-black/65 backdrop-blur-sm lg:hidden"
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
           />
