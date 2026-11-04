@@ -5,15 +5,17 @@ import { Button } from "@/components/ui/button";
 import {
   assignToMe,
   updateTicketStatus,
+  updateTicketPriority,
   addComment,
 } from "@/app/actions/tickets";
-import type { TicketStatus, UserRole } from "@/types";
+import type { TicketStatus, TicketPriority, UserRole } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 
 interface TicketActionsProps {
   ticketId: string;
   currentStatus: TicketStatus;
+  currentPriority?: TicketPriority;
   isAssigned: boolean;
   role: UserRole;
 }
@@ -26,9 +28,17 @@ const STATUS_OPTIONS: { label: string; value: TicketStatus }[] = [
   { label: "Closed", value: "closed" },
 ];
 
+const PRIORITY_OPTIONS: { label: string; value: TicketPriority }[] = [
+  { label: "Critical", value: "critical" },
+  { label: "High", value: "high" },
+  { label: "Medium", value: "medium" },
+  { label: "Low", value: "low" },
+];
+
 export function TicketActions({
   ticketId,
   currentStatus,
+  currentPriority = "medium",
   isAssigned,
   role,
 }: TicketActionsProps) {
@@ -37,6 +47,7 @@ export function TicketActions({
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [showPriorityMenu, setShowPriorityMenu] = useState(false);
 
   const canManage = role === "admin" || role === "agent";
 
@@ -98,7 +109,10 @@ export function TicketActions({
           size="sm"
           variant="secondary"
           disabled={isPending}
-          onClick={() => setShowStatusMenu((v) => !v)}
+          onClick={() => {
+            setShowStatusMenu((v) => !v);
+            setShowPriorityMenu(false);
+          }}
         >
           Change Status
         </Button>
@@ -119,6 +133,46 @@ export function TicketActions({
                   runAction(
                     () => updateTicketStatus(ticketId, opt.value),
                     `Status → ${opt.label}`
+                  );
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="relative">
+        <Button
+          className="w-full"
+          size="sm"
+          variant="secondary"
+          disabled={isPending}
+          onClick={() => {
+            setShowPriorityMenu((v) => !v);
+            setShowStatusMenu(false);
+          }}
+        >
+          Change Priority
+        </Button>
+        {showPriorityMenu && (
+          <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-lg border border-slate-700 bg-slate-900 py-1 shadow-xl">
+            {PRIORITY_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                disabled={opt.value === currentPriority || isPending}
+                className={`block w-full px-3 py-2 text-left text-sm capitalize transition-colors ${
+                  opt.value === currentPriority
+                    ? "bg-emerald-600/20 text-emerald-400"
+                    : "text-slate-300 hover:bg-slate-800"
+                }`}
+                onClick={() => {
+                  setShowPriorityMenu(false);
+                  runAction(
+                    () => updateTicketPriority(ticketId, opt.value),
+                    `Priority → ${opt.label}`
                   );
                 }}
               >
