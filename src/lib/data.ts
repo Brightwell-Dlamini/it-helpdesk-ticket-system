@@ -50,6 +50,17 @@ function mapTicket(row: Record<string, unknown>, profiles?: Map<string, { full_n
   };
 }
 
+function isSystemContent(content: string): boolean {
+  return (
+    content.startsWith("Status changed") ||
+    content.startsWith("Ticket created") ||
+    content.startsWith("Assigned to") ||
+    content.startsWith("Assignment cleared") ||
+    content.startsWith("Priority changed") ||
+    content.startsWith("SLA ")
+  );
+}
+
 export async function getTickets(): Promise<Ticket[]> {
   if (!isSupabaseConfigured()) return mockTickets;
 
@@ -135,12 +146,7 @@ export async function getComments(ticketId: string): Promise<Comment[]> {
       const authorName =
         (c.profiles as { full_name: string })?.full_name ?? "Unknown";
       const content = c.content as string;
-      const isSystem =
-        authorName === "System" ||
-        content.startsWith("Status changed") ||
-        content.startsWith("Ticket created") ||
-        content.startsWith("Assigned to") ||
-        content.startsWith("SLA ");
+      const isSystem = isSystemContent(content);
       return {
         id: c.id,
         ticketId: c.ticket_id,
