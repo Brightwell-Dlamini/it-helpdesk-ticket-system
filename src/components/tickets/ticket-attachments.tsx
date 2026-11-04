@@ -115,11 +115,14 @@ export function TicketAttachments({
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
+    <div className="card p-5">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
           <Paperclip className="h-3.5 w-3.5" />
-          Attachments ({attachments.length})
+          Attachments
+          <span className="rounded-full bg-slate-800 px-1.5 py-0.5 text-[10px] tabular-nums text-slate-400">
+            {attachments.length}
+          </span>
         </h3>
         {canUpload && (
           <label className="cursor-pointer">
@@ -133,7 +136,7 @@ export function TicketAttachments({
                 e.target.value = "";
               }}
             />
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:bg-slate-700">
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-700">
               <Upload className="h-3.5 w-3.5" />
               {isPending ? "Uploading…" : "Upload"}
             </span>
@@ -148,11 +151,13 @@ export function TicketAttachments({
           {attachments.map((file) => (
             <li
               key={file.id}
-              className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2"
+              className="flex items-center gap-3 rounded-lg border border-slate-800/80 bg-slate-950/50 px-3 py-2.5 transition-colors hover:border-slate-700"
             >
               <FileIcon mime={file.mimeType} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{file.fileName}</p>
+                <p className="truncate text-sm font-medium text-slate-100">
+                  {file.fileName}
+                </p>
                 <p className="text-[11px] text-slate-500">
                   {formatBytes(file.fileSize)}
                   {file.uploaderName ? ` · ${file.uploaderName}` : ""}

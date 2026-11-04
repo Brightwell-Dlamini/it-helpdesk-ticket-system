@@ -72,7 +72,7 @@ export function TicketActions({
 
   if (!canManage) {
     return (
-      <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
+      <div className="card p-5">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           Actions
         </h3>
@@ -103,7 +103,7 @@ export function TicketActions({
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5 space-y-3">
+    <div className="card space-y-3 p-5">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
         Actions
       </h3>
@@ -136,7 +136,7 @@ export function TicketActions({
           Change Status
         </Button>
         {showStatusMenu && (
-          <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-lg border border-slate-700 bg-slate-900 py-1 shadow-xl">
+          <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 py-1 shadow-xl shadow-black/40">
             {STATUS_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -176,7 +176,7 @@ export function TicketActions({
           Change Priority
         </Button>
         {showPriorityMenu && (
-          <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-lg border border-slate-700 bg-slate-900 py-1 shadow-xl">
+          <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 py-1 shadow-xl shadow-black/40">
             {PRIORITY_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -219,7 +219,7 @@ export function TicketActions({
       )}
 
       {message && (
-        <p className="text-xs text-center text-emerald-400/90 pt-1">{message}</p>
+        <p className="pt-1 text-center text-xs text-emerald-400/90">{message}</p>
       )}
     </div>
   );
@@ -266,7 +266,10 @@ export function CommentForm({ ticketId, role }: CommentFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-slate-800 p-5">
+    <form
+      onSubmit={handleSubmit}
+      className="border-t border-slate-800/80 p-5"
+    >
       {canInternal && (
         <div className="mb-3 flex flex-wrap gap-1.5">
           {CANNED_REPLIES.map((c) => (
@@ -274,7 +277,7 @@ export function CommentForm({ ticketId, role }: CommentFormProps) {
               key={c.label}
               type="button"
               onClick={() => setContent(c.text)}
-              className="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-emerald-600/50 hover:text-emerald-400"
+              className="rounded-full border border-slate-700/80 bg-slate-900/80 px-2.5 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-emerald-600/50 hover:text-emerald-400"
             >
               {c.label}
             </button>
@@ -287,18 +290,18 @@ export function CommentForm({ ticketId, role }: CommentFormProps) {
         placeholder="Add a reply or note..."
         rows={3}
         disabled={isPending}
-        className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm placeholder:text-slate-500 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 resize-none disabled:opacity-60"
+        className="w-full resize-none rounded-lg border border-slate-800 bg-slate-950/80 px-3 py-2.5 text-sm placeholder:text-slate-500 transition-colors focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-60"
       />
-      <div className="mt-3 flex items-center justify-between">
+      <div className="mt-3 flex items-center justify-between gap-3">
         {canInternal ? (
           <label className="flex items-center gap-2 text-xs text-slate-400">
             <input
               type="checkbox"
               checked={isInternal}
               onChange={(e) => setIsInternal(e.target.checked)}
-              className="rounded"
+              className="rounded border-slate-600"
             />
-            Internal note (not visible to requester)
+            Internal note
           </label>
         ) : (
           <span />
