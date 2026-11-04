@@ -142,36 +142,37 @@ export default function WallPage() {
 
   return (
     <div className="flex h-screen flex-col px-5 py-4 lg:px-8 lg:py-5">
-      <header className="mb-4 flex items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-600 shadow-lg shadow-emerald-900/40">
+      <header className="mb-4 flex items-center justify-between gap-4 border-b border-slate-800/50 pb-4">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 shadow-xl shadow-emerald-900/50 ring-1 ring-emerald-400/30">
             <LifeBuoy className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white lg:text-2xl">
+            <h1 className="text-xl font-extrabold tracking-tight text-white lg:text-2xl">
               ApexDesk
             </h1>
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
               Live Operations Board
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 rounded-full border border-slate-800/80 bg-slate-900/50 px-3 py-1.5">
             <span
               className={`h-2.5 w-2.5 rounded-full ${
                 live
-                  ? "bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse"
+                  ? "bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.9)]"
                   : "bg-red-500"
               }`}
+              style={live ? { animation: "live-dot 1.6s ease-in-out infinite" } : undefined}
             />
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
               {live ? "Live" : "Reconnecting"}
             </span>
           </div>
           <div className="text-right">
-            <p className="font-mono text-lg font-semibold tabular-nums text-white lg:text-2xl">
+            <p className="font-mono text-xl font-bold tabular-nums tracking-tight text-white lg:text-3xl">
               {clock}
             </p>
             {lastSync && (
@@ -185,18 +186,18 @@ export default function WallPage() {
 
       {stats && (
         <div className="mb-4 grid grid-cols-4 gap-2 sm:grid-cols-4 lg:grid-cols-8 lg:gap-3">
-          <Metric label="Active" value={stats.total} accent="text-white" ring="ring-slate-700" />
-          <Metric label="Open" value={stats.open} accent="text-blue-400" ring="ring-blue-500/30" />
-          <Metric label="In Progress" value={stats.inProgress} accent="text-violet-400" ring="ring-violet-500/30" />
-          <Metric label="Pending" value={stats.pending} accent="text-amber-400" ring="ring-amber-500/30" />
-          <Metric label="Critical" value={stats.critical} accent="text-red-400" ring="ring-red-500/40" pulse={stats.critical > 0} />
+          <Metric label="Active" value={stats.total} accent="text-white" ring="ring-slate-700/80" />
+          <Metric label="Open" value={stats.open} accent="text-blue-400" ring="ring-blue-500/25" />
+          <Metric label="In Progress" value={stats.inProgress} accent="text-violet-400" ring="ring-violet-500/25" />
+          <Metric label="Pending" value={stats.pending} accent="text-amber-400" ring="ring-amber-500/25" />
+          <Metric label="Critical" value={stats.critical} accent="text-red-400" ring="ring-red-500/35" pulse={stats.critical > 0} />
           <Metric label="Unassigned" value={stats.unassigned} accent="text-orange-400" ring="ring-orange-500/30" />
-          <Metric label="SLA Risk" value={stats.atRisk} accent="text-amber-300" ring="ring-amber-500/40" pulse={stats.atRisk > 0} />
-          <Metric label="Breached" value={stats.breached} accent="text-red-500" ring="ring-red-500/50" pulse={stats.breached > 0} />
+          <Metric label="SLA Risk" value={stats.atRisk} accent="text-amber-300" ring="ring-amber-500/35" pulse={stats.atRisk > 0} />
+          <Metric label="Breached" value={stats.breached} accent="text-red-500" ring="ring-red-500/45" pulse={stats.breached > 0} />
         </div>
       )}
 
-      <div className="mb-1 grid grid-cols-[minmax(0,1fr)_100px_110px_100px_90px_100px] gap-3 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-600 lg:grid-cols-[minmax(0,1.4fr)_120px_130px_110px_100px_110px] lg:text-xs">
+      <div className="mb-1.5 grid grid-cols-[minmax(0,1fr)_100px_110px_100px_90px_100px] gap-3 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600 lg:grid-cols-[minmax(0,1.4fr)_120px_130px_110px_100px_110px] lg:text-[11px]">
         <span>Ticket</span>
         <span>Priority</span>
         <span>Status</span>
@@ -208,8 +209,10 @@ export default function WallPage() {
       <div className="flex-1 space-y-1.5 overflow-hidden">
         {visible.length === 0 && !error && (
           <div className="flex h-full flex-col items-center justify-center text-slate-500">
-            <p className="text-2xl font-semibold text-emerald-400/90">Queue clear</p>
-            <p className="mt-2 text-sm">No active tickets right now</p>
+            <p className="text-3xl font-bold tracking-tight text-emerald-400/90">
+              Queue clear
+            </p>
+            <p className="mt-2 text-sm text-slate-500">No active tickets right now</p>
           </div>
         )}
 
@@ -222,31 +225,35 @@ export default function WallPage() {
             <div
               key={ticket.id}
               className={[
-                "grid grid-cols-[minmax(0,1fr)_100px_110px_100px_90px_100px] items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors lg:grid-cols-[minmax(0,1.4fr)_120px_130px_110px_100px_110px] lg:py-3",
+                "grid grid-cols-[minmax(0,1fr)_100px_110px_100px_90px_100px] items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors lg:grid-cols-[minmax(0,1.4fr)_120px_130px_110px_100px_110px] lg:py-3",
                 breached
-                  ? "border-red-500/50 bg-red-950/40 shadow-[inset_0_0_0_1px_rgba(239,68,68,0.15)]"
+                  ? "border-red-500/50 bg-red-950/45 shadow-[inset_0_0_0_1px_rgba(239,68,68,0.12),0_0_24px_-8px_rgba(239,68,68,0.35)]"
                   : critical
-                    ? "border-red-500/25 bg-red-950/20"
+                    ? "border-red-500/30 bg-red-950/25"
                     : atRisk
                       ? "border-amber-500/30 bg-amber-950/20"
-                      : "border-slate-800/80 bg-slate-900/40",
+                      : "border-slate-800/60 bg-slate-900/35",
               ].join(" ")}
-              style={{ animationDelay: `${i * 20}ms` }}
+              style={{ animation: "fade-up 0.4s cubic-bezier(0.22,1,0.36,1) both", animationDelay: `${i * 18}ms` }}
             >
               <div className="flex min-w-0 items-center gap-3">
-                <div className={`h-10 w-1 shrink-0 rounded-full ${priorityBar(ticket.priority)}`} />
+                <div
+                  className={`h-11 w-1 shrink-0 rounded-full ${priorityBar(ticket.priority)} ${
+                    critical || breached ? "shadow-[0_0_10px_currentColor]" : ""
+                  }`}
+                />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-medium text-slate-500 lg:text-sm">
                       {ticket.number}
                     </span>
                     {breached && (
-                      <span className="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-red-500 text-white">
+                      <span className="rounded px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide bg-red-500 text-white shadow-lg shadow-red-900/40">
                         Breach
                       </span>
                     )}
                   </div>
-                  <p className="truncate text-sm font-semibold text-slate-100 lg:text-base">
+                  <p className="truncate text-sm font-semibold text-slate-50 lg:text-base">
                     {ticket.title}
                   </p>
                   <p className="truncate text-[11px] text-slate-500 lg:text-xs">
@@ -260,13 +267,13 @@ export default function WallPage() {
               <div>
                 <span
                   className={[
-                    "inline-block rounded-md px-2 py-1 text-[11px] font-bold uppercase tracking-wide lg:text-xs",
+                    "inline-block rounded-md px-2 py-1 text-[11px] font-extrabold uppercase tracking-wide lg:text-xs",
                     ticket.priority === "critical"
-                      ? "bg-red-500 text-white"
+                      ? "bg-red-500 text-white shadow-md shadow-red-900/40"
                       : ticket.priority === "high"
                         ? "bg-orange-500/90 text-white"
                         : ticket.priority === "medium"
-                          ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30"
+                          ? "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30"
                           : "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/25",
                   ].join(" ")}
                 >
@@ -286,8 +293,12 @@ export default function WallPage() {
 
               <div
                 className={[
-                  "font-mono text-sm font-semibold tabular-nums lg:text-base",
-                  breached ? "text-red-400" : atRisk ? "text-amber-300" : "text-slate-400",
+                  "font-mono text-sm font-bold tabular-nums lg:text-base",
+                  breached
+                    ? "text-red-400"
+                    : atRisk
+                      ? "text-amber-300"
+                      : "text-slate-400",
                 ].join(" ")}
               >
                 {formatSla(ticket.hoursLeft, ticket.slaBreached)}
@@ -295,11 +306,11 @@ export default function WallPage() {
 
               <div className="text-right text-xs text-slate-400 lg:text-sm">
                 {ticket.assigneeName ? (
-                  <span className="font-medium text-slate-200">
+                  <span className="font-semibold text-slate-200">
                     {ticket.assigneeName.split(" ")[0]}
                   </span>
                 ) : (
-                  <span className="font-semibold text-orange-400">—</span>
+                  <span className="font-bold text-orange-400">—</span>
                 )}
               </div>
             </div>
@@ -313,14 +324,18 @@ export default function WallPage() {
         )}
       </div>
 
-      <footer className="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-3 text-[10px] uppercase tracking-[0.15em] text-slate-600 lg:text-xs">
+      <footer className="mt-3 flex items-center justify-between border-t border-slate-800/50 pt-3 text-[10px] uppercase tracking-[0.15em] text-slate-600 lg:text-xs">
         <span>
           Sorted by severity · SLA risk · age
           {error && (
-            <span className="ml-3 text-amber-500/80 normal-case tracking-normal">{error}</span>
+            <span className="ml-3 normal-case tracking-normal text-amber-500/80">
+              {error}
+            </span>
           )}
         </span>
-        <span className="text-slate-500">ApexDesk Wall · Ops only · Not for public display</span>
+        <span className="text-slate-500">
+          ApexDesk Wall · Ops only · Not for public display
+        </span>
       </footer>
     </div>
   );
@@ -341,14 +356,16 @@ function Metric({
 }) {
   return (
     <div
-      className={`rounded-xl bg-slate-900/60 px-3 py-2.5 ring-1 ${ring} ${
+      className={`rounded-xl bg-slate-900/55 px-3 py-2.5 ring-1 backdrop-blur-sm ${ring} ${
         pulse && value > 0 ? "animate-pulse" : ""
       }`}
     >
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 lg:text-[11px]">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 lg:text-[11px]">
         {label}
       </p>
-      <p className={`mt-0.5 text-2xl font-bold tabular-nums tracking-tight lg:text-3xl ${accent}`}>
+      <p
+        className={`mt-0.5 text-2xl font-extrabold tabular-nums tracking-tight lg:text-3xl ${accent}`}
+      >
         {value}
       </p>
     </div>
