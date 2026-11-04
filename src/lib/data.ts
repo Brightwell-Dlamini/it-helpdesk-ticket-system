@@ -248,13 +248,26 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         ? Math.round(((totalWithSla - breached) / totalWithSla) * 1000) / 10
         : 100;
 
+    // Real average first-response time from tickets that have first_response_at
+    const withResponse = tickets.filter((t) => t.firstResponseAt);
+    let avgResponseTimeHours = mockStats.avgResponseTimeHours;
+    if (withResponse.length > 0) {
+      const totalHours = withResponse.reduce((sum, t) => {
+        const created = new Date(t.createdAt).getTime();
+        const responded = new Date(t.firstResponseAt!).getTime();
+        return sum + (responded - created) / (1000 * 60 * 60);
+      }, 0);
+      avgResponseTimeHours =
+        Math.round((totalHours / withResponse.length) * 10) / 10;
+    }
+
     return {
       openTickets: open,
       inProgress,
       pending,
       resolvedToday,
       slaCompliance,
-      avgResponseTimeHours: mockStats.avgResponseTimeHours,
+      avgResponseTimeHours,
       unassigned,
       critical,
     };
@@ -263,8 +276,59 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   }
 }
 
+function mapKnowledge(row: Record<string, unknown>): KnowledgeArticle {
+  return {
+    id: row.id as string,
+    title: row.title as string,
+    summary: (row.summary as string) ?? "",
+    content: row.content as string,
+    category: row.category as KnowledgeArticle["category"],
+    views: (row.views as number) ?? 0,
+    helpful: (row.helpful as number) ?? 0,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
 export async function getKnowledgeArticles(): Promise<KnowledgeArticle[]> {
-  return mockArticles;
+  if (!isSupabaseConfigured()) return mockArticles;
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("knowledge_articles")
+      .select("*")
+      .order("updated_at", { ascending: false });
+
+    if (error || !data || data.length === 0) return mockArticles;
+    return data.map(mapKnowledge);
+  } catch {
+    return mockArticles;
+  }
+}
+
+export async function getKnowledgeArticleById(
+  id: string
+): Promise<KnowledgeArticle | null> {
+  if (!isSupabaseConfigured()) {
+    return mockArticles.find((a) => a.id === id) ?? null;
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("knowledge_articles")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !data) {
+      return mockArticles.find((a) => a.id === id) ?? null;
+    }
+    return mapKnowledge(data);
+  } catch {
+    return mockArticles.find((a) => a.id === id) ?? null;
+  }
 }
 
 export async function getAttachments(ticketId: string): Promise<Attachment[]> {
