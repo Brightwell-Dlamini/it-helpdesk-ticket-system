@@ -265,6 +265,7 @@ export default async function TicketDetailPage({ params }: PageProps) {
             <TicketActions
               ticketId={ticket.id}
               currentStatus={ticket.status}
+              currentPriority={ticket.priority}
               isAssigned={Boolean(ticket.assigneeId)}
               role={role}
             />
