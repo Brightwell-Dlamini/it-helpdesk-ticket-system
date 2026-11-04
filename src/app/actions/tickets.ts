@@ -18,6 +18,28 @@ function isSupabaseConfigured(): boolean {
   );
 }
 
+const STATUS_LABELS: Record<TicketStatus, string> = {
+  open: "Open",
+  in_progress: "In Progress",
+  pending: "Pending",
+  resolved: "Resolved",
+  closed: "Closed",
+};
+
+async function insertSystemComment(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  ticketId: string,
+  authorId: string,
+  content: string
+) {
+  await supabase.from("comments").insert({
+    ticket_id: ticketId,
+    author_id: authorId,
+    content,
+    is_internal: false,
+  });
+}
+
 export async function createTicket(formData: {
   title: string;
   description: string;
@@ -36,7 +58,9 @@ export async function createTicket(formData: {
   }
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
   const dueAt = calculateDueAt(new Date(), formData.priority);
@@ -57,6 +81,13 @@ export async function createTicket(formData: {
 
   if (error) return { success: false, error: error.message };
 
+  await insertSystemComment(
+    supabase,
+    data.id,
+    user.id,
+    `Ticket created · Priority ${formData.priority} · Category ${formData.category}`
+  );
+
   revalidatePath("/tickets");
   revalidatePath("/dashboard");
   return { success: true, data };
@@ -71,32 +102,108 @@ export async function updateTicketStatus(
   }
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
+
+  const { data: existing } = await supabase
+    .from("tickets")
+    .select("status, created_at, priority")
+    .eq("id", ticketId)
+    .single();
+
+  if (!existing) return { success: false, error: "Ticket not found" };
+  if (existing.status === status) {
+    return { success: true, data: { id: ticketId, status } };
+  }
 
   const updates: Record<string, unknown> = { status };
   if (status === "resolved" || status === "closed") {
     updates.resolved_at = new Date().toISOString();
   }
 
-  if (status === "resolved") {
-    const { data: ticket } = await supabase
-      .from("tickets")
-      .select("created_at, priority")
-      .eq("id", ticketId)
-      .single();
-    if (ticket) {
-      updates.sla_breached = isSlaBreached(
-        ticket.created_at,
-        ticket.priority,
-        new Date().toISOString(),
-        status
-      );
-    }
+  if (status === "resolved" || status === "closed") {
+    updates.sla_breached = isSlaBreached(
+      existing.created_at,
+      existing.priority,
+      new Date().toISOString(),
+      status
+    );
   }
 
-  const { error } = await supabase.from("tickets").update(updates).eq("id", ticketId);
+  const { error } = await supabase
+    .from("tickets")
+    .update(updates)
+    .eq("id", ticketId);
   if (error) return { success: false, error: error.message };
+
+  await insertSystemComment(
+    supabase,
+    ticketId,
+    user.id,
+    `Status changed to ${STATUS_LABELS[status]}`
+  );
+
+  revalidatePath(`/tickets/${ticketId}`);
+  revalidatePath("/tickets");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function updateTicketPriority(
+  ticketId: string,
+  priority: TicketPriority
+): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) {
+    return { success: true, data: { id: ticketId, priority } };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
+
+  const { data: existing } = await supabase
+    .from("tickets")
+    .select("priority, created_at, status, resolved_at")
+    .eq("id", ticketId)
+    .single();
+
+  if (!existing) return { success: false, error: "Ticket not found" };
+  if (existing.priority === priority) {
+    return { success: true, data: { id: ticketId, priority } };
+  }
+
+  const dueAt = calculateDueAt(existing.created_at, priority);
+  const updates: Record<string, unknown> = {
+    priority,
+    due_at: dueAt.toISOString(),
+  };
+
+  // Re-evaluate SLA when priority changes on open tickets
+  if (!["resolved", "closed"].includes(existing.status)) {
+    updates.sla_breached = isSlaBreached(
+      existing.created_at,
+      priority,
+      null,
+      existing.status
+    );
+  }
+
+  const { error } = await supabase
+    .from("tickets")
+    .update(updates)
+    .eq("id", ticketId);
+  if (error) return { success: false, error: error.message };
+
+  await insertSystemComment(
+    supabase,
+    ticketId,
+    user.id,
+    `Priority changed to ${priority}`
+  );
 
   revalidatePath(`/tickets/${ticketId}`);
   revalidatePath("/tickets");
@@ -113,10 +220,14 @@ export async function assignTicket(
   }
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
   const updates: Record<string, unknown> = { assignee_id: assigneeId };
+  let assigneeName = "Unassigned";
+
   if (assigneeId) {
     updates.status = "in_progress";
     const { data: ticket } = await supabase
@@ -127,10 +238,27 @@ export async function assignTicket(
     if (ticket && !ticket.first_response_at) {
       updates.first_response_at = new Date().toISOString();
     }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", assigneeId)
+      .single();
+    assigneeName = profile?.full_name ?? "agent";
   }
 
-  const { error } = await supabase.from("tickets").update(updates).eq("id", ticketId);
+  const { error } = await supabase
+    .from("tickets")
+    .update(updates)
+    .eq("id", ticketId);
   if (error) return { success: false, error: error.message };
+
+  await insertSystemComment(
+    supabase,
+    ticketId,
+    user.id,
+    assigneeId ? `Assigned to ${assigneeName}` : "Assignment cleared"
+  );
 
   revalidatePath(`/tickets/${ticketId}`);
   revalidatePath("/tickets");
@@ -143,7 +271,9 @@ export async function assignToMe(ticketId: string): Promise<ActionResult> {
     return { success: true, data: { id: ticketId, assignedTo: "current-user" } };
   }
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
   return assignTicket(ticketId, user.id);
 }
@@ -161,7 +291,9 @@ export async function addComment(formData: {
   }
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
   const { error } = await supabase.from("comments").insert({
@@ -193,7 +325,10 @@ export async function addComment(formData: {
     }
   }
 
-  await supabase.from("tickets").update(ticketUpdates).eq("id", formData.ticketId);
+  await supabase
+    .from("tickets")
+    .update(ticketUpdates)
+    .eq("id", formData.ticketId);
   revalidatePath(`/tickets/${formData.ticketId}`);
   return { success: true };
 }
@@ -214,8 +349,27 @@ export async function runSlaBreachDetection(): Promise<ActionResult> {
 
   let breachedCount = 0;
   for (const ticket of openTickets ?? []) {
-    if (isSlaBreached(ticket.created_at, ticket.priority, null, ticket.status)) {
-      await supabase.from("tickets").update({ sla_breached: true }).eq("id", ticket.id);
+    if (
+      isSlaBreached(ticket.created_at, ticket.priority, null, ticket.status)
+    ) {
+      await supabase
+        .from("tickets")
+        .update({ sla_breached: true })
+        .eq("id", ticket.id);
+
+      // Best-effort system note (uses first available agent/admin as author if possible)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        await insertSystemComment(
+          supabase,
+          ticket.id,
+          user.id,
+          "SLA resolution window breached"
+        );
+      }
+
       breachedCount++;
     }
   }
