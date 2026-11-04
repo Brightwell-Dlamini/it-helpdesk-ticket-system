@@ -1,17 +1,21 @@
 import { Header } from "@/components/layout/header";
-import { getDashboardStats, getTickets } from "@/lib/data";
+import { getDashboardStats, getTickets, getCurrentUser } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
   getPriorityColor,
   getStatusColor,
   getStatusLabel,
 } from "@/lib/utils";
+import { Download } from "lucide-react";
 
 export default async function ReportsPage() {
-  const [stats, tickets] = await Promise.all([
+  const [stats, tickets, me] = await Promise.all([
     getDashboardStats(),
     getTickets(),
+    getCurrentUser(),
   ]);
+
+  const canExport = me && me.role !== "requester";
 
   const active = tickets.filter(
     (t) => !["resolved", "closed"].includes(t.status)
@@ -49,6 +53,18 @@ export default async function ReportsPage() {
         title="Reports & Analytics"
         description="Operational metrics from live ticket data"
       />
+
+      {canExport && (
+        <div className="flex justify-end px-6 pt-2">
+          <a
+            href="/api/export/tickets"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-medium text-slate-200 transition-colors hover:border-emerald-600 hover:text-emerald-400"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export tickets CSV
+          </a>
+        </div>
+      )}
 
       <div className="grid gap-6 p-6 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-6">

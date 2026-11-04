@@ -35,6 +35,25 @@ const PRIORITY_OPTIONS: { label: string; value: TicketPriority }[] = [
   { label: "Low", value: "low" },
 ];
 
+const CANNED_REPLIES = [
+  {
+    label: "Acknowledged",
+    text: "Thanks for reporting this. We've received your request and are looking into it.",
+  },
+  {
+    label: "Need more info",
+    text: "Could you please provide a bit more detail so we can investigate further? Screenshots or exact error messages would help.",
+  },
+  {
+    label: "Resolved — confirm",
+    text: "We've applied a fix on our side. Please try again and let us know if the issue is resolved.",
+  },
+  {
+    label: "Pending vendor",
+    text: "This is currently with our vendor/provider. We'll update you as soon as we have progress.",
+  },
+];
+
 export function TicketActions({
   ticketId,
   currentStatus,
@@ -248,6 +267,20 @@ export function CommentForm({ ticketId, role }: CommentFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="border-t border-slate-800 p-5">
+      {canInternal && (
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {CANNED_REPLIES.map((c) => (
+            <button
+              key={c.label}
+              type="button"
+              onClick={() => setContent(c.text)}
+              className="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-emerald-600/50 hover:text-emerald-400"
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+      )}
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}

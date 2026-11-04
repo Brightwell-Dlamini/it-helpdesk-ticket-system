@@ -1,6 +1,8 @@
 import { Header } from "@/components/layout/header";
-import { getUsers } from "@/lib/data";
+import { getUsers, getCurrentUser } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
+import { UserRoleSelect } from "@/components/users/user-role-select";
+import { currentUser as mockUser } from "@/lib/mock-data";
 
 const roleColors: Record<string, string> = {
   admin: "bg-violet-500/15 text-violet-400 border-violet-500/30",
@@ -9,14 +11,23 @@ const roleColors: Record<string, string> = {
 };
 
 export default async function UsersPage() {
-  const users = await getUsers();
+  const [users, me] = await Promise.all([getUsers(), getCurrentUser()]);
+  const role = (me ?? mockUser).role;
+  const isAdmin = role === "admin";
 
   return (
     <div>
-      <Header title="Users & Roles" description="Manage team members and access" />
-      <div className="p-6">
-        <div className="overflow-hidden rounded-xl border border-slate-800">
-          <table className="w-full text-left text-sm">
+      <Header
+        title="Users & Roles"
+        description={
+          isAdmin
+            ? "Manage team members and access levels"
+            : "Team directory"
+        }
+      />
+      <div className="p-4 sm:p-6">
+        <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="border-b border-slate-800 bg-slate-900/80 text-xs uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-4 py-3 font-medium">Name</th>
@@ -34,7 +45,20 @@ export default async function UsersPage() {
                   <td className="px-4 py-3 font-medium">{user.name}</td>
                   <td className="px-4 py-3 text-slate-400">{user.email}</td>
                   <td className="px-4 py-3">
-                    <Badge className={roleColors[user.role]}>{user.role}</Badge>
+                    {isAdmin ? (
+                      <div className="flex items-center gap-2">
+                        <Badge className={roleColors[user.role]}>
+                          {user.role}
+                        </Badge>
+                        <UserRoleSelect
+                          userId={user.id}
+                          currentRole={user.role}
+                          disabled={user.id === me?.id}
+                        />
+                      </div>
+                    ) : (
+                      <Badge className={roleColors[user.role]}>{user.role}</Badge>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-slate-400">
                     {user.department || "—"}
@@ -44,6 +68,11 @@ export default async function UsersPage() {
             </tbody>
           </table>
         </div>
+        {isAdmin && (
+          <p className="mt-3 text-xs text-slate-500">
+            Admins can change roles. You cannot demote your own account.
+          </p>
+        )}
       </div>
     </div>
   );
