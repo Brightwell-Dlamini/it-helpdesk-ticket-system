@@ -19,11 +19,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const variants = {
       primary:
-        "bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-900/30",
+        "bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-600 text-white shadow-sm shadow-emerald-900/30",
       secondary:
-        "bg-slate-800 hover:bg-slate-700 text-slate-100",
-      ghost: "hover:bg-slate-800 text-slate-300",
-      danger: "bg-red-600 hover:bg-red-500 text-white",
+        "bg-slate-800 hover:bg-slate-700 active:bg-slate-800 text-slate-100 border border-slate-700/50",
+      ghost: "hover:bg-slate-800/80 active:bg-slate-800 text-slate-300",
+      danger:
+        "bg-red-600 hover:bg-red-500 active:bg-red-600 text-white shadow-sm shadow-red-900/20",
     };
 
     const sizes = {
@@ -36,7 +37,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 disabled:pointer-events-none",
+          "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-50 disabled:pointer-events-none",
           variants[variant],
           sizes[size],
           className
