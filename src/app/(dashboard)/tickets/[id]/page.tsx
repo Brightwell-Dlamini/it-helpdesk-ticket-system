@@ -62,6 +62,9 @@ export default async function TicketDetailPage({ params }: PageProps) {
 
   const role = (me ?? mockUser).role;
   const assignee = users.find((u) => u.id === ticket.assigneeId);
+  const agents = users.filter(
+    (u) => u.role === "agent" || u.role === "admin"
+  );
 
   const visibleComments =
     role === "requester"
@@ -90,12 +93,9 @@ export default async function TicketDetailPage({ params }: PageProps) {
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
-            {/* Ticket body */}
             <div className="card overflow-hidden">
               <div className="flex">
-                <div
-                  className={`w-1 shrink-0 ${priorityBar(ticket.priority)}`}
-                />
+                <div className={`w-1 shrink-0 ${priorityBar(ticket.priority)}`} />
                 <div className="min-w-0 flex-1 p-5 sm:p-6">
                   <div className="mb-4 flex flex-wrap items-center gap-2">
                     <Badge className={getStatusColor(ticket.status)}>
@@ -140,7 +140,6 @@ export default async function TicketDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Activity */}
             <div className="card overflow-hidden">
               <div className="flex items-center gap-2 border-b border-slate-800/80 px-5 py-4">
                 <MessageSquare className="h-4 w-4 text-slate-400" />
@@ -173,15 +172,11 @@ export default async function TicketDetailPage({ params }: PageProps) {
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs text-slate-500">
-                              <span className="font-medium text-slate-400">
-                                System
-                              </span>
+                              <span className="font-medium text-slate-400">System</span>
                               <span className="mx-1.5 text-slate-700">·</span>
                               {formatRelative(comment.createdAt)}
                             </p>
-                            <p className="mt-0.5 text-sm text-slate-400">
-                              {comment.content}
-                            </p>
+                            <p className="mt-0.5 text-sm text-slate-400">{comment.content}</p>
                           </div>
                         </div>
                       );
@@ -227,7 +222,6 @@ export default async function TicketDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-4">
             <div className="card p-5">
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -239,9 +233,7 @@ export default async function TicketDetailPage({ params }: PageProps) {
                     <User className="h-3.5 w-3.5" />
                     Requester
                   </dt>
-                  <dd className="font-medium text-slate-100">
-                    {ticket.requesterName}
-                  </dd>
+                  <dd className="font-medium text-slate-100">{ticket.requesterName}</dd>
                 </div>
                 <div>
                   <dt className="mb-1 flex items-center gap-1.5 text-slate-500">
@@ -262,18 +254,14 @@ export default async function TicketDetailPage({ params }: PageProps) {
                     <Clock className="h-3.5 w-3.5" />
                     Created
                   </dt>
-                  <dd className="font-medium text-slate-200">
-                    {formatDate(ticket.createdAt)}
-                  </dd>
+                  <dd className="font-medium text-slate-200">{formatDate(ticket.createdAt)}</dd>
                 </div>
                 <div>
                   <dt className="mb-1 flex items-center gap-1.5 text-slate-500">
                     <Clock className="h-3.5 w-3.5" />
                     Last Updated
                   </dt>
-                  <dd className="font-medium text-slate-200">
-                    {formatDate(ticket.updatedAt)}
-                  </dd>
+                  <dd className="font-medium text-slate-200">{formatDate(ticket.updatedAt)}</dd>
                 </div>
                 {ticket.dueAt && (
                   <div>
@@ -283,9 +271,7 @@ export default async function TicketDetailPage({ params }: PageProps) {
                     </dt>
                     <dd
                       className={`font-medium ${
-                        ticket.slaBreached
-                          ? "text-red-400"
-                          : "text-slate-200"
+                        ticket.slaBreached ? "text-red-400" : "text-slate-200"
                       }`}
                     >
                       {formatDate(ticket.dueAt)}
@@ -322,7 +308,9 @@ export default async function TicketDetailPage({ params }: PageProps) {
               currentStatus={ticket.status}
               currentPriority={ticket.priority}
               isAssigned={Boolean(ticket.assigneeId)}
+              currentAssigneeId={ticket.assigneeId}
               role={role}
+              agents={agents.map((a) => ({ id: a.id, name: a.name }))}
             />
           </div>
         </div>
