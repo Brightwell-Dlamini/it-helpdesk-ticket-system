@@ -594,7 +594,7 @@ export function TicketsBoard({
                     </td>
                   </tr>
                 ))
- }
+              )}
             </tbody>
           </table>
         </div>
