@@ -50,7 +50,6 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
-
 .break-safe {
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -146,6 +145,10 @@ body {
   animation: slide-in-right 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.animate-live-dot {
+  animation: live-dot 1.6s ease-in-out infinite;
+}
+
 .stagger > * {
   animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -182,6 +185,7 @@ body {
   .animate-fade-in,
   .animate-scale-in,
   .animate-slide-in-right,
+  .animate-live-dot,
   .stagger > * {
     animation: none !important;
   }
@@ -196,6 +200,10 @@ body {
 
   .card-hover {
     @apply transition-all duration-200 hover:border-slate-700/90 hover:bg-slate-900/65 hover:shadow-md hover:shadow-black/40;
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-0.5;
   }
 
   .stat-card {
@@ -244,5 +252,16 @@ body {
 
   .text-gradient {
     @apply bg-gradient-to-r from-slate-50 via-white to-slate-300 bg-clip-text text-transparent;
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(30, 41, 59, 0.6) 0%,
+      rgba(51, 65, 85, 0.45) 50%,
+      rgba(30, 41, 59, 0.6) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
   }
 }
