@@ -6,6 +6,7 @@ import type { User } from "@/types";
 import { Menu, LifeBuoy } from "lucide-react";
 import Link from "next/link";
 import { ToastProvider } from "@/components/ui/toast";
+import { CommandPalette } from "@/components/layout/command-palette";
 
 export function AppShell({
   user,
@@ -57,6 +58,8 @@ export function AppShell({
             {children}
           </div>
         </main>
+
+        <CommandPalette role={user.role} />
       </div>
     </ToastProvider>
   );
